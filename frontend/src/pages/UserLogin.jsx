@@ -1,61 +1,99 @@
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
-import Uberpic from "../assets/Uber.png";
-import { useState } from "react";
+import { UserDataContext } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 const UserLogin = () => {
-  const [email, setemail] = useState("");
-  const [password, setpassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [userData, setUserData] = useState({});
 
-  const submithandler = (e) => {
+  const { user, setUser } = useContext(UserDataContext);
+  const navigate = useNavigate();
+
+  const submitHandler = async (e) => {
     e.preventDefault();
 
-    setUserData({ email: email, password: password });
-    setemail("");
-    setpassword("");
+    const userData = {
+      email: email,
+      password: password,
+    };
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/login`,
+      userData
+    );
+
+    if (response.status === 200) {
+      const data = response.data;
+      setUser(data.user);
+      localStorage.setItem("token", data.token);
+      navigate("/home");
+    }
+
+    setEmail("");
+    setPassword("");
   };
 
   return (
     <div className="p-7 h-screen flex flex-col justify-between">
       <div>
-        {" "}
-        <img className="w-20 mb-5" src={Uberpic} alt="Uber" />
-        <form onSubmit={submithandler}>
-          <h3 className="text-xl font-medium mb-2">Please enter your email</h3>
+        <img
+          className="w-16 mb-10"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYQy-OIkA6In0fTvVwZADPmFFibjmszu2A0g&s"
+          alt=""
+        />
+
+        <form
+          onSubmit={(e) => {
+            submitHandler(e);
+          }}
+        >
+          <h3 className="text-lg font-medium mb-2">What's your email</h3>
           <input
-            className="bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base"
             required
             value={email}
-            onChange={(e) => setemail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+            }}
+            className="bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base"
             type="email"
             placeholder="email@example.com"
           />
-          <h3 className="text-xl font-medium mb-2">Enter your password</h3>
+
+          <h3 className="text-lg font-medium mb-2">Enter Password</h3>
+
           <input
-            className="bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base"
-            required
+            className="bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base"
             value={password}
-            onChange={(e) => setpassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+            required
             type="password"
             placeholder="password"
           />
-          <button className="bg-[#111] text-white font-semibold py-3 rounded-lg mt-2 w-full">
+
+          <button className="bg-[#111] text-white font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base">
             Login
           </button>
         </form>
-        <p className="text-center mt-3">
-          New Here?
-          <Link className="text-blue-600" to={"/signup"}>
-            {" "}
-            Create New Account
-          </Link>{" "}
+        <p className="text-center">
+          New here?{" "}
+          <Link to="/signup" className="text-blue-600">
+            Create new Account
+          </Link>
         </p>
       </div>
-      <Link
-        to="/captain-login"
-        className="bg-[#F85901] flex items-center justify-center text-white font-semibold py-3 rounded-lg mt-2 w-full"
-      >
-        Login In As Captain
-      </Link>
+      <div>
+        <Link
+          to="/captain-login"
+          className="bg-[#FF6500] flex items-center justify-center text-white font-semibold mb-5 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base"
+        >
+          Sign in as Captain
+        </Link>
+      </div>
     </div>
   );
 };
